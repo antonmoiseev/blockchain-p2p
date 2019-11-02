@@ -1,0 +1,30 @@
+<main>
+  <h1>Blockchain node</h1>
+  <aside><p>{{ statusLine }}</p></aside>
+  <section>
+    <app-transaction-form></app-transaction-form>
+  </section>
+  <section>
+    <h2>Pending transactions</h2>
+    <pre class="pending-transactions__list">{{ formattedTransactions }}</pre>
+    <div class="pending-transactions__form">
+      <button type="button"
+              class="ripple"
+              (click)="generateBlock()"
+              [disabled]="node.noPendingTransactions || node.isMining">GENERATE BLOCK</button>
+    </div>
+    <div class="clear"></div>
+  </section>
+  <section>
+    <h2>Current blocks</h2>
+    <div class="blocks">
+      <div class="blocks__ribbon">
+        <app-block *ngFor="let blk of node.chain; let i = index"
+                   [block]="blk"
+                   [index]="i">
+        </app-block>
+      </div>
+      <div class="blocks__overlay"></div>
+    </div>
+  </section>
+</main>
