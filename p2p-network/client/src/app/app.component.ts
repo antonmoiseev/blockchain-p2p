@@ -4,7 +4,6 @@ import { SignalingService } from './shared/services/signaling.service';
 @Component({
   selector: 'bc-app',
   template: `
-    <h1>BC</h1>
     <button (click)="broadcast()">Broadcast</button>
   `
 })

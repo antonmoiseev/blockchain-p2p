@@ -18,8 +18,8 @@ rtcConnection.ondatachannel = (e) => {
 };
 
 rtcConnection.onicecandidate = (e) => {
-  log('[WebRTC] Sending an ICE candidate...', '#666');
   if (e.candidate) {
+    log('[WebRTC] Sending an ICE candidate...', '#666');
     ws.send(JSON.stringify({ type: 'add-ice-candidate', data: e.candidate }));
   }
 };
@@ -32,11 +32,11 @@ function sendOffer() {
   log('[WebRTC] Creating an offer...');
   rtcConnection.createOffer()
     .then(offer => {
-      log('[WebRTC] Sending the offer...');
+      log('[WebRTC] Setting local session description...');
       rtcConnection.setLocalDescription(offer);
     })
     .then(() => {
-      log('[WebRTC] Setting local session description..');
+      log('[WebRTC] Sending the offer...');
       ws.send(JSON.stringify({ type: 'offer', data: rtcConnection.localDescription }));
     });
 }
@@ -46,6 +46,7 @@ function handleMessageFromSignalingServer(messageEvent) {
   
   switch (message.type) {
     case 'add-ice-candidate': {
+      log('[WebRTC] Received an ICE candidate.');
       rtcConnection
         .addIceCandidate(message.data)
         .catch(() => log('[WebRTC] Cannot add ICE candidate: ' + message.data, 'red'));
@@ -55,7 +56,7 @@ function handleMessageFromSignalingServer(messageEvent) {
     case 'offer': {
       log('[WebRTC] Received an offer.');
       if (!rtcConnection.remoteDescription) {
-        log('[WebRTC] Setting up remote session description.');
+        log('[WebRTC] Setting remote session description.');
         rtcConnection.setRemoteDescription(message.data)
           .then(() => {
             log('[WebRTC] Creating an answer...');
