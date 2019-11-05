@@ -48,15 +48,15 @@ export class Peer {
     const label = `CH_${peer.localId}_${peer.remoteId}`;
     peer.setupDataChannel(peer.connection.createDataChannel(label));
 
-    console.log('[WebRTC] Creating an offer...');
+    console.log('Creating an offer...');
     peer.connection
       .createOffer()
       .then(offer => {
-        console.log('[WebRTC] Setting local session description...');
+        console.log('Setting local session description...');
         peer.connection.setLocalDescription(offer);
       })
       .then(() => {
-        console.log('[WebRTC] Sending the offer...');
+        console.log('[WS] Sending the offer...');
         peer.ws.next(
           new RTCOfferMessage({
             candidate: peer.connection.localDescription,
@@ -81,20 +81,20 @@ export class Peer {
       peer.setupDataChannel(event.channel);
     };
 
-    console.log('[WebRTC] Received an offer.');
-    console.log('[WebRTC] Setting remote session description.');
+    console.log('Received an offer.');
+    console.log('Setting remote session description.');
     peer.connection
       .setRemoteDescription(offer)
       .then(() => {
-        console.log('[WebRTC] Creating an answer...');
+        console.log('Creating an answer...');
         return peer.connection.createAnswer();
       })
       .then(answer => {
-        console.log('[WebRTC] Setting local description...');
+        console.log('Setting local description...');
         peer.connection.setLocalDescription(answer);
       })
       .then(() => {
-        console.log('[WebRTC] Sending the answer...');
+        console.log('[WS] Sending the answer...');
         peer.ws.next(
           new RTCAnswerMessage({
             candidate: peer.connection.localDescription,
@@ -134,18 +134,18 @@ export class Peer {
     switch (message.type) {
       case MessageType.RTCAnswer: {
         if (message.data.sender === this.remoteId) {
-          console.log(`[WebRTC] Received an answer from ${message.data.sender}.`);
-          console.log('[WebRTC] Setting remote session description...');
+          console.log(`[WS] Received an answer from ${message.data.sender}.`);
+          console.log('Setting remote session description...');
           this.connection.setRemoteDescription(message.data.candidate);
         }
         break;
       }
       case MessageType.RTCAddICECandidate: {
         if (message.data.sender === this.remoteId) {
-          console.log('[WebRTC] Received an ICE candidate.');
+          console.log('[WS] Received an ICE candidate.');
           this.connection
             .addIceCandidate(message.data.candidate)
-            .catch(() => console.error('[WebRTC] Cannot add ICE candidate: ', message.data.candidate));
+            .catch(() => console.error('Cannot add ICE candidate: ', message.data.candidate));
         }
         break;
       }
@@ -154,7 +154,7 @@ export class Peer {
 
   private readonly onICECandidate = (event: RTCPeerConnectionIceEvent) => {
     if (event.candidate) {
-      console.log('[WebRTC] Sending an ICE candidate...');
+      console.log('[WS] Sending an ICE candidate...');
       this.ws.next(
         new RTCAddICECandidateMessage({
           sender: this.localId,
@@ -166,10 +166,10 @@ export class Peer {
   };
 
   private readonly onOpen = () => {
-    console.log('[WebRTC] Data channel opened: ' + this.channel.label);
+    console.log('[P2P] Data channel opened: ' + this.channel.label);
   };
 
   private readonly onMessage = (event: MessageEvent) => {
-    console.log(`[WebRTC] ${this.remoteId}: ${event.data}`);
+    console.log(`[P2P] ${this.remoteId}: ${event.data}`);
   };
 }

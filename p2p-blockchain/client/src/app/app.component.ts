@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef } from '@angular/core';
 import { Message, MessageTypes } from './shared/messages';
 import { Block, BlockchainNodeService, formatTransactions, Transaction } from './shared/services';
 import { WebRTCService } from './shared/services/webrtc.service';
@@ -9,13 +9,14 @@ import { WebRTCService } from './shared/services/webrtc.service';
 })
 export class AppComponent {
   constructor(
+    private readonly cdr: ChangeDetectorRef,
     private readonly server: WebRTCService,
     // private readonly server: WebsocketService,
     readonly node: BlockchainNodeService
   ) {
     this.server.messageReceived.subscribe(message => this.handleServerMessages(message));
 
-    setTimeout(() => this.initializeBlockchain(), 5000);
+    setTimeout(() => this.initializeBlockchain(), Math.random() * 2000);
   }
 
   private async initializeBlockchain() {
@@ -23,18 +24,19 @@ export class AppComponent {
     if (blocks.length > 0) {
       this.node.initializeWith(blocks);
     } else {
+      console.log('No peers, generating the genesis block');
       await this.node.initializeWithGenesisBlock();
     }
   }
 
   get statusLine(): string {
-    return this.node.chainIsEmpty
-      ? '⏳ Initializing the blockchain...'
-      : this.node.isMining
-      ? '⏳ Mining a new block...'
-      : this.node.noPendingTransactions
-      ? '📩 Add one or more transactions.'
-      : '✅ Ready to mine a new block.';
+    // prettier-ignore
+    return (
+      this.node.chainIsEmpty          ? '⏳ Initializing the blockchain...' :
+      this.node.isMining              ? '⏳ Mining a new block...' :
+      this.node.noPendingTransactions ? '📩 Add one or more transactions.' :
+                                        '✅ Ready to mine a new block.'
+    );
   }
 
   get formattedTransactions() {
@@ -58,6 +60,7 @@ export class AppComponent {
     // to the chain. Hence wrap the addBlock() call in the try / catch.
     try {
       await this.node.addBlock(block);
+      this.cdr.detectChanges();
       if (notifyOthers) {
         this.server.announceNewBlock(block);
       }
@@ -81,7 +84,6 @@ export class AppComponent {
   }
 
   private handleGetLongestChainRequest(message: Message): void {
-    // console.log('Sending reply to GetLongestChainResponse');
     this.server.send({
       type: MessageTypes.GetLongestChainResponse,
       correlationId: message.correlationId,

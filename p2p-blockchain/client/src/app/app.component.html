@@ -16,7 +16,7 @@
     <div class="clear"></div>
   </section>
   <section>
-    <h2>Current blocks</h2>
+    <h2>Current blocks ({{ node.chain.length }})</h2>
     <div class="blocks">
       <div class="blocks__ribbon">
         <app-block *ngFor="let blk of node.chain; let i = index"

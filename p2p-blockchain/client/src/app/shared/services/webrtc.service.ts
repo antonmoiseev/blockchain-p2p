@@ -93,7 +93,6 @@ export class WebRTCService {
 
   async requestLongestChain(): Promise<Block[]> {
     if (this.signalingService.peerIDs.length > 0) {
-      console.log('Sending getLongestChain request');
       const reply = await this.send(
         {
           type: MessageTypes.GetLongestChainRequest,
@@ -103,7 +102,6 @@ export class WebRTCService {
       );
       return reply.payload;
     } else {
-      console.log('No peers, immediately returning empty chain');
       return await Promise.resolve([]);
     }
   }
